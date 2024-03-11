@@ -21,8 +21,7 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
+            
         }
 
         h1 {
@@ -79,17 +78,7 @@
             background-color: #45a049;
         }
 
-        .addb button{
-            background-color: #a44242;
-            width: 200px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 8px 16px;
-            margin: 0 4px;
-            
-            
-        }
+
         .modal {
             display: none;
             position: fixed;
@@ -138,7 +127,7 @@
         .sear input{
             background-color: #e5c5c5;
         }
-        
+       
     </style>
 </head>
 <body>
@@ -180,69 +169,73 @@
         </table>
 
         <div id="paginationControls" class="pagination" data-total-pages="{{ total_pages }}">
-
+            <button onclick="openModal()" style="background-color: rgb(205, 107, 107); height: 50px;">ADD SUBJECT</button>
             <button onclick="previousPage()">Previous</button>
             {% for page_num in page_range %}
             <button onclick="goToPage('{{ page_num }}')" {% if page_num == current_page %} class="active" {% endif %}>{{ page_num }}</button>
             {% endfor %}
             <button onclick="nextPage()">Next</button>
             <p id="currentPageInfo">Page {{ current_page }} of {{ total_pages }}</p>
+            
         </div>
-      
-        
 
-    
-        <br><br> 
         
-
         <div id="myModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeModal()">&times;</span>
                 <input type="text" id="subject_name" placeholder="Enter subject name">
                 <button onclick="addSubject()">Add Subject</button>
+
             </div>
         </div>
+      
+    
+
+        
         
     </div>
+
 
     <script>
         // JavaScript functions for pagination
         function previousPage() {
-        var currentPage = parseInt(getParameterByName('page'));
-        if (!isNaN(currentPage) && currentPage > 1) {
-            goToPage(currentPage - 1);
+            var currentPage = parseInt(getParameterByName('page'));
+            if (!isNaN(currentPage) && currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
         }
-    }
-
-    function nextPage() {
-        var currentPage = parseInt(getParameterByName('page'));
-        var totalPages = parseInt(document.getElementById('paginationControls').getAttribute('data-total-pages'));
-        if (!isNaN(currentPage) && currentPage < totalPages) {
-            goToPage(currentPage + 1);
-        }
-    }
-    function goToPage(pageNumber) {
-        var searchQuery = document.getElementById('searchQuery').value.trim();
-        var sortOption = document.getElementById('sort').value;
-        var url = "/pssapp/subject_list/?page=" + pageNumber;
-        if (searchQuery !== '') {
-            url += "&q=" + searchQuery;
-        }
-        if (sortOption !== 'default') {
-            url += "&sort=" + sortOption;
-        }
-        window.location.href = url;
-    }
     
-    function getParameterByName(name) {
-        var urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-    }
-    function sortSubjects() {
-        goToPage(1); 
-    }
-
+        function nextPage() {
+            var currentPage = parseInt(getParameterByName('page'));
+            var totalPages = parseInt(document.getElementById('paginationControls').getAttribute('data-total-pages'));
+            if (!isNaN(currentPage) && currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        }
+    
+        function goToPage(pageNumber) {
+            var searchQuery = document.getElementById('searchQuery').value.trim();
+            var sortOption = document.getElementById('sort').value;
+            var url = "/pssapp/subject_list/?page=" + pageNumber;
+            if (searchQuery !== '') {
+                url += "&q=" + searchQuery;
+            }
+            if (sortOption !== 'default') {
+                url += "&sort=" + sortOption;
+            }
+            window.location.href = url;
+        }
+        
+        function getParameterByName(name) {
+            var urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+    
+        function sortSubjects() {
+            goToPage(1); 
+        }
     </script>
+    
 
 <script>
         
@@ -341,6 +334,7 @@
 });
 
 </script>
+
 
 
 

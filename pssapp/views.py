@@ -18,28 +18,57 @@ def sublist(request):
             return JsonResponse({'success': True, 'id': subject.id})
     return JsonResponse({'success': False})
 
+
 def subject_list(request):
-    
     query = request.GET.get('q', '')
     sort_option = request.GET.get('sort', 'default')
     page_number = int(request.GET.get('page', 1))
 
-    
-    subjects = Subject.objects.all()
+    # Construct the base SQL query
+    base_query = """
+        SELECT id, name FROM pssapp_subject
+    """
+
+    # Add WHERE clause if search query is provided
+    params = []
     if query:
-        subjects = subjects.filter(name__icontains=query)
-    
+        base_query += """
+            WHERE LOWER(name) LIKE %s
+        """
+        params.append('%' + query.lower() + '%')
+
+    # Add ORDER BY clause for sorting
     if sort_option == 'asc':
-        subjects = subjects.order_by('name')
+        base_query += """
+            ORDER BY name ASC
+        """
     elif sort_option == 'desc':
-        subjects = subjects.order_by('-name')
-   
-    limit = 10  
+        base_query += """
+            ORDER BY name DESC
+        """
+
+    # Calculate pagination limit and offset
+    limit = 10
     offset = (page_number - 1) * limit
-    total_subjects_count = subjects.count()
+    base_query += " LIMIT %s OFFSET %s;"
+    params.extend([limit, offset])
+
+    with connection.cursor() as cursor:
+        cursor.execute(base_query, params)
+        results = cursor.fetchall()
+
+        # Convert query results into a list of dictionaries
+        subjects = [{'id': row[0], 'name': row[1]} for row in results]
+
+        # Get total subjects count from database (without limit and offset)
+        total_subjects_count_query = "SELECT COUNT(*) FROM pssapp_subject"
+        cursor.execute(total_subjects_count_query)
+        total_subjects_count = cursor.fetchone()[0]
+
+    # Calculate total pages
     total_pages = (total_subjects_count + limit - 1) // limit
-    subjects = subjects[offset: offset + limit]
-    
+
+    # Generate page range
     page_range = range(1, total_pages + 1)
 
     return render(request, 'subject_list.html', {
@@ -51,9 +80,22 @@ def subject_list(request):
         'sort_option': sort_option
     })
 
+    
+
+    
+    
+
 def subject_search(request):
     query = request.GET.get('q', '')
-    subjects = Subject.objects.filter(name__icontains=query)[:10]
-    data = [{'name': subject.name} for subject in subjects]
+    cursor = connection.cursor()
+    sql = """
+        SELECT name 
+        FROM pssapp_subject
+        WHERE name ILIKE %s
+        LIMIT 10
+    """
+    params = ['%' + query + '%']
+    cursor.execute(sql, params)
+    subjects = cursor.fetchall()
+    data = [{'name': subject[0]} for subject in subjects]
     return JsonResponse(data, safe=False)
-
