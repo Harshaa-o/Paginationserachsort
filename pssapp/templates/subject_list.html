@@ -147,9 +147,7 @@
                 <option value="desc" {% if sort_option == 'desc' %} selected {% endif %}>Descending</option>
             </select>
         </div>
-        
-    
-        
+               
         <table>
             <thead>
                 <tr>
@@ -197,6 +195,35 @@
 
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        if (query === '') {
+            searchResults.innerHTML = ''; 
+            return;
+        }
+
+        fetch(`/pssapp/subject_list/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                searchResults.innerHTML = ''; 
+                data.forEach(subject => {
+                    const li = document.createElement('li');
+                    li.textContent = subject.name;
+                    searchResults.appendChild(li);
+                });
+
+                // Update pagination controls
+               
+            })
+            .catch(error => console.error('Error:', error));
+    });
+});
+
         // JavaScript functions for pagination
         function previousPage() {
             var currentPage = parseInt(getParameterByName('page'));
@@ -204,10 +231,15 @@
                 goToPage(currentPage - 1);
             }
         }
+
+        
     
         function nextPage() {
             var currentPage = parseInt(getParameterByName('page'));
             var totalPages = parseInt(document.getElementById('paginationControls').getAttribute('data-total-pages'));
+            if (isNaN(currentPage)) {
+        currentPage = 1; // Set currentPage to 1 if it's not a number
+    }
             if (!isNaN(currentPage) && currentPage < totalPages) {
                 goToPage(currentPage + 1);
             }
@@ -234,6 +266,9 @@
         function sortSubjects() {
             goToPage(1); 
         }
+
+    document.getElementById('previousButton').addEventListener('click', previousPage);
+    document.getElementById('nextButton').addEventListener('click', nextPage);
     </script>
     
 
@@ -271,7 +306,7 @@
 
     
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/pssapp/added/');
+        xhr.open('POST', '/pssapp/subject_list/');
         
 
         var csrftoken = getCookie('csrftoken');
@@ -307,31 +342,8 @@
     }
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const searchResults = document.getElementById('searchResults');
+  
 
-    searchInput.addEventListener('input', function() {
-        const query = this.value.trim();
-
-        if (query === '') {
-            searchResults.innerHTML = ''; 
-            return;
-        }
-
-        fetch(`/pssapp/search/?q=${query}`)
-            .then(response => response.json())
-            .then(data => {
-                searchResults.innerHTML = ''; 
-                data.forEach(subject => {
-                    const li = document.createElement('li');
-                    li.textContent = subject.name;
-                    searchResults.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-    });
-});
 
 </script>
 
